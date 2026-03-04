@@ -1,0 +1,118 @@
+				import spacy
+import sys
+
+# Load spaCy NLP model
+nlp = spacy.load("en_core_web_sm")
+
+
+# ===============================
+# Helper Functions
+# ===============================
+
+def check_exit(text):
+    if text.lower().strip() in ["exit", "quit", "bye", "stop"]:
+        print("\nBot: Goodbye.")
+        sys.exit()
+
+
+def extract_number(text):
+    doc = nlp(text)
+    for token in doc:
+        if token.like_num:
+            try:
+                return float(token.text)
+            except:
+                continue
+    return None
+
+
+def ask_amount(question):
+    while True:
+        user_input = input(question + "\nYou: ")
+        check_exit(user_input)
+
+        amount = extract_number(user_input)
+
+        if amount is not None:
+            return amount
+        else:
+            print("Bot: Please mention a valid amount (example: 50000).")
+
+
+def give_advice(salary, rent, food, transport, entertainment, other):
+    total_expenses = rent + food + transport + entertainment + other
+    savings = salary - total_expenses
+    savings_rate = (savings / salary) * 100
+
+    print("\n========== Financial Summary ==========")
+    print(f"Monthly Salary: ₹{salary}")
+    print(f"Total Expenses: ₹{total_expenses}")
+    print(f"Savings: ₹{savings}")
+    print(f"Savings Rate: {savings_rate:.2f}%")
+
+    print("\n========== Financial Advice ==========")
+
+    # Basic Risk Level
+    if savings_rate >= 30:
+        print("✔ You are financially SAFE.")
+        print("Advice: Start investing in long-term assets (mutual funds, index funds).")
+    elif savings_rate >= 10:
+        print("⚠ You are in MODERATE condition.")
+        print("Advice: Increase savings to at least 30% of income.")
+    else:
+        print("❌ You are in DANGER zone.")
+        print("Advice: Reduce expenses immediately or increase income.")
+
+    # Overspending Analysis
+    print("\nSpending Analysis:")
+
+    if rent > 0.4 * salary:
+        print("- Rent is too high (more than 40% of income). Consider cheaper housing.")
+
+    if food > 0.25 * salary:
+        print("- Food expenses are high. Reduce outside dining.")
+
+    if entertainment > 0.15 * salary:
+        print("- Entertainment spending is excessive.")
+
+    if total_expenses > salary:
+        print("- You are spending more than you earn. This is financially unstable.")
+
+    if savings <= 0:
+        print("- You are not saving anything. Emergency fund is impossible.")
+
+    if savings > 0:
+        months_cover = savings / total_expenses if total_expenses != 0 else 0
+        print(f"- Your current savings can cover about {months_cover:.2f} months of expenses.")
+
+    print("=======================================")
+
+
+# ===============================
+# Main Chatbot
+# ===============================
+
+def main():
+    print("======================================")
+    print(" AI Personal Finance NLP Chatbot ")
+    print("======================================")
+    print("You can answer in full sentences like:")
+    print("- My salary is 50000 per month")
+    print("- I spend 10000 on rent")
+    print("Type 'exit' anytime to quit.\n")
+
+    # Ask Salary
+    salary = ask_amount("Bot: What is your monthly salary?")
+
+    # Ask Expenses
+    rent = ask_amount("Bot: How much do you spend on rent?")
+    food = ask_amount("Bot: How much do you spend on food?")
+    transport = ask_amount("Bot: How much do you spend on transport?")
+    entertainment = ask_amount("Bot: How much do you spend on entertainment?")
+    other = ask_amount("Bot: Any other monthly expenses?")
+
+    give_advice(salary, rent, food, transport, entertainment, other)
+
+
+if __name__ == "__main__":
+    main()
